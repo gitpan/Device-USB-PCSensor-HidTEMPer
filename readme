@@ -1,0 +1,54 @@
+Device-USB-PCSensor-HidTEMPer version 0.01
+==========================================
+
+This module contains an interface to the PCSensor HidTEMPer and PCSensor 
+HidTEMPerNTC temperature sensors. There are also the common functions for the
+device itself (Device) and the sensors (Sensor) laying the grounds for other 
+HidTEMPer versions to be added later on. 
+
+The current temperature can be returned either using the Celsius 
+scale or the Fahrenheit scale.
+
+WARNING 
+
+The results returned from this code needs to undergo more testing. If the
+code used to write to the device is not used with extreme care it may 
+destroy the device.
+
+TODO
+
+This release does not contain any test-scripts, this will be added in the 
+next release.
+
+INSTALLATION
+
+To install this module type the following:
+
+   perl Makefile.PL
+   make
+   make test
+   make install
+
+DEPENDENCIES
+
+This modules uses the following other modules:
+
+use 5.010
+use strict
+use warnings
+use Carp
+use Device::USB
+use Device::USB::Device
+use Time::HiRes qw / sleep /
+
+This module uses the strict and warning pragmas.
+
+COPYRIGHT AND LICENSE
+
+Copyright (c) 2010 Magnus Sulland
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.10.0 or,
+at your option, any later version of Perl 5 you may have available.
+
+

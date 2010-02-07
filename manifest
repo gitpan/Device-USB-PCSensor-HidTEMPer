@@ -1,0 +1,12 @@
+Changes
+Makefile.PL
+MANIFEST
+README
+lib/Device/USB/PCSensor/HidTEMPer.pm
+lib/Device/USB/PCSensor/HidTEMPer/Device.pm
+lib/Device/USB/PCSensor/HidTEMPer/Sensor.pm
+lib/Device/USB/PCSensor/HidTEMPer/NTC.pm
+lib/Device/USB/PCSensor/HidTEMPer/NTC/External.pm
+lib/Device/USB/PCSensor/HidTEMPer/NTC/Internal.pm
+lib/Device/USB/PCSensor/HidTEMPer/TEMPer.pm
+lib/Device/USB/PCSensor/HidTEMPer/TEMPer/Internal.pm

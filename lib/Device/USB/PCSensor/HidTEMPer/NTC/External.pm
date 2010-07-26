@@ -1,6 +1,5 @@
 package Device::USB::PCSensor::HidTEMPer::NTC::External;
 
-use 5.010;
 use strict;
 use warnings;
 use Carp;
@@ -15,11 +14,11 @@ Device::USB::PCSensor::HidTEMPer::NTC::Internal - The HidTEMPerNTC external sens
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 =head1 SYNOPSIS
 
@@ -35,7 +34,7 @@ This is the implementation of the HidTEMPerNTC external sensor.
 
 =item * MAX_TEMPERATURE
 
-The highest temperature this sensor can detect.
+The highest temperature(150 degrees celsius) this sensor can detect.
 
 =cut
 
@@ -43,7 +42,7 @@ use constant MAX_TEMPERATURE    => 150;
 
 =item * MIN_TEMPERATURE
 
-The lowest temperature this sensor can detect.
+The lowest temperature(-50 degrees celsius) this sensor can detect.
 
 =cut
 
@@ -88,6 +87,9 @@ use constant CALIBRATION_VALUES => [
 =over 3
 
 =item * new()
+
+Returns a new External sensor object.
+
 =cut
 sub new
 {
@@ -106,10 +108,7 @@ sub new
 
 =item * celsius()
 
-Read the current temperature from the device.
-
-Output
-  Returns the corrent degree in celsius
+Returns the current temperature from the device in celsius degrees.
 
 =cut
 
@@ -134,7 +133,7 @@ sub celsius
     # Position 7: unused
     
     # This device may return 255*8 until it is ready for use.
-    @data        = $self->{unit}->read( 0x41 );
+    @data        = $self->{unit}->_read( 0x41 );
     $counter     = 0;
 
     READ: until ( $counter > 20 ){
@@ -149,7 +148,7 @@ sub celsius
                   }continue{
                       $counter++;
                       sleep 0.2;
-                      @data = $self->{unit}->read( 0x41 );
+                      @data = $self->{unit}->_read( 0x41 );
                   }
     
     croak 'Invalid readings returned' if $counter >= 21;
@@ -157,8 +156,20 @@ sub celsius
     # Calculate key
     $key = $self->_volt_7705_calibration( $volt );
     
-    # Using this formula instead of the provided number list 
-    # f(y)=66.7348/(66.7275/(67.8088 - 9.70353*log(0.000251309 + y*y)) - 0.21651)
+=pod
+
+The formula used to calculate value based on a calibrated key value is
+created using the Eureqa tool from Cornell Computational Synthesis Lab,
+http://ccsl.mae.cornell.edu/eureqa.
+
+Resulting in the use of this formula instead of the provided number list:
+f(y)=66.7348/(66.7275/(67.8088 - 9.70353*log(0.000251309 + y*y)) - 0.21651)
+
+If you find another formula that is more accurate please drop me a line. 
+The data used can be found in the source code of this file.
+
+=cut 
+
     $temperature = 66.7348 
                   / ( 66.7275 
                       / ( 67.8088 
@@ -185,24 +196,40 @@ sub _volt_7705_calibration
     my $reference   = undef;
     
     # Select the correct values needed
-    given ( $volt ){
-        when( $_ <= 0.0010888)  { return -0.000334633; }
-        when( $_ <= 0.0012803)  { $reference = CALIBRATION_VALUES->[0]; }
-        when( $_ <= 0.0017002)  { $reference = CALIBRATION_VALUES->[1]; }
-        when( $_ <= 0.002666)   { $reference = CALIBRATION_VALUES->[2]; }
-        when( $_ <= 0.00522)    { $reference = CALIBRATION_VALUES->[3]; }
-        when( $_ <= 0.0149)     { $reference = CALIBRATION_VALUES->[4]; }
-        when( $_ <= 0.04683)    { $reference = CALIBRATION_VALUES->[5]; }
-        when( $_ <= 0.21342)    { $reference = CALIBRATION_VALUES->[6]; }
-        when( $_ <= 0.36914)    { $reference = CALIBRATION_VALUES->[7]; }
-        when( $_ <= 0.44121)    { $reference = CALIBRATION_VALUES->[8]; }
-        when( $_ <= 0.65351)    { $reference = CALIBRATION_VALUES->[9]; }
-        when( $_ <= 0.92445)    { $reference = CALIBRATION_VALUES->[10]; }
-        when( $_ <= 1.08022)    { $reference = CALIBRATION_VALUES->[11]; }
-        when( $_ <= 1.8745)     { $reference = CALIBRATION_VALUES->[12]; }
-        when( $_ <= 1.9943)     { $reference = CALIBRATION_VALUES->[13]; }
-        when( $_ <= 2.4589)     { $reference = CALIBRATION_VALUES->[14]; }
-        default{ return 0.26235000000000008; }
+    if( $volt <= 0.0010888 ){ 
+        return -0.000334633; 
+    }elsif( $volt <= 0.0012803 ){ 
+        $reference = CALIBRATION_VALUES->[0]; 
+    }elsif( $volt <= 0.0017002 ){
+        $reference = CALIBRATION_VALUES->[1]; 
+    }elsif( $volt <= 0.002666 ){ 
+        $reference = CALIBRATION_VALUES->[2]; 
+    }elsif( $volt <= 0.00522 ){
+        $reference = CALIBRATION_VALUES->[3];
+    }elsif( $volt <= 0.0149 ){ 
+        $reference = CALIBRATION_VALUES->[4]; 
+    }elsif( $volt <= 0.04683 ){ 
+        $reference = CALIBRATION_VALUES->[5]; 
+    }elsif( $volt <= 0.21342 ){
+        $reference = CALIBRATION_VALUES->[6]; 
+    }elsif( $volt <= 0.36914 ){ 
+        $reference = CALIBRATION_VALUES->[7]; 
+    }elsif( $volt <= 0.44121 ){ 
+        $reference = CALIBRATION_VALUES->[8];
+    }elsif( $volt <= 0.65351 ){
+        $reference = CALIBRATION_VALUES->[9]; 
+    }elsif( $volt <= 0.92445 ){ 
+        $reference = CALIBRATION_VALUES->[10]; 
+    }elsif( $volt <= 1.08022 ){
+        $reference = CALIBRATION_VALUES->[11]; 
+    }elsif( $volt <= 1.8745 ){
+        $reference = CALIBRATION_VALUES->[12]; 
+    }elsif( $volt <= 1.9943 ){
+        $reference = CALIBRATION_VALUES->[13]; 
+    }elsif( $volt <= 2.4589 ){
+        $reference = CALIBRATION_VALUES->[14]; 
+    }else{
+        return 0.26235000000000008;
     }
     
     return (
@@ -245,23 +272,18 @@ sub _new_reading_needed
     return 0 if $self->{gain} % 2 != 0;
     
     # Adjust gain
-    given ( $volt ){
-        when ( undef ) { 
-            carp 'Undefined voltage';
-        }
-        when ( $_ > ( 2.214 / $self->{gain} ) ) { 
-            $self->{gain} *= 0.5;
-            $self->_write_gain();
-            return -1;
-        }
-        when ( $_ < ( 0.984 / $self->{gain} ) ) {   
-            $self->{gain} *= 2;
-            $self->_write_gain();
-            return 1;
-        }
-        default { 
-            return 0;
-        }
+    if( !defined $volt ){
+        carp 'Undefined voltage';
+    }elsif( $volt > ( 2.214 / $self->{gain} ) ) { 
+        $self->{gain} = $self->{gain}*0.5;
+        $self->_write_gain();
+        return -1;
+    }elsif( $volt < ( 0.984 / $self->{gain} ) ) {   
+        $self->{gain} = $self->{gain}*2;
+        $self->_write_gain();
+        return 1;
+    }else{ 
+        return 0;
     }
     
     croak 'Could not recalculate gain';
@@ -270,23 +292,21 @@ sub _new_reading_needed
 # Write gain value to device
 sub _write_gain
 {
-    $_[0]->{unit}->write( 0x61 + ( log( $_[0]->{gain} ) / log(2) ) );
+    $_[0]->{unit}->_write( 0x61 + ( log( $_[0]->{gain} ) / log(2) ) );
     sleep 0.2;
-    $_[0]->{unit}->write( 0x61 + ( log( $_[0]->{gain} ) / log(2) ) );
+    $_[0]->{unit}->_write( 0x61 + ( log( $_[0]->{gain} ) / log(2) ) );
 }
 
 =back
 
-=head1 INHERITED METHODS
+=head1 INHERIT METHODS FROM
 
-This module inherits methods from:
-  Device::USB::PCSensor::HidTEMPer::Sensor
+Device::USB::PCSensor::HidTEMPer::Sensor
 
 =head1 DEPENDENCIES
 
-  use 5.010;
-  use strict;
-  use warnings;
+This module internally includes and takes use of the following packages:
+
   use Carp;
   use Time::HiRes qw / sleep /;
   use Device::USB::PCSensor::HidTEMPer::Sensor;
@@ -295,8 +315,7 @@ This module uses the strict and warning pragmas.
 
 =head1 BUGS
 
-If you find any bugs or missing features please notify me using the following 
-email address: msulland@cpan.org
+Please report any bugs or missing features using the CPAN RT tool.
 
 =head1 FOR MORE INFORMATION
 
@@ -316,22 +335,14 @@ volt.
 
 Copyright (c) 2010 Magnus Sulland
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.10.0 or,
-at your option, any later version of Perl 5 you may have available.
+This program is free software; you can redistribute it and/or modify it 
+under the same terms as Perl itself.
 
 =cut
 
 1;
 
 __END__
-
-The formula used to calculate value based on a calibrated key value is
-created using the Eureqa tool from Cornell Computational Synthesis Lab,
-http://ccsl.mae.cornell.edu/eureqa.
-
-If you find another formula that is more accurate please drop me a line. 
-The dataset used by PCSensor is:
 
 Temperature, Calibrated key
 -50,712.066

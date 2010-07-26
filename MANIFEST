@@ -1,4 +1,5 @@
 Changes
+LICENSE
 Makefile.PL
 MANIFEST
 README
@@ -10,3 +11,6 @@ lib/Device/USB/PCSensor/HidTEMPer/NTC/External.pm
 lib/Device/USB/PCSensor/HidTEMPer/NTC/Internal.pm
 lib/Device/USB/PCSensor/HidTEMPer/TEMPer.pm
 lib/Device/USB/PCSensor/HidTEMPer/TEMPer/Internal.pm
+t/device.t
+t/hidtemper.t
+t/sensor.t

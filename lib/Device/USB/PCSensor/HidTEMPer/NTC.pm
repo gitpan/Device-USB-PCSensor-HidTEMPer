@@ -1,9 +1,7 @@
 package Device::USB::PCSensor::HidTEMPer::NTC;
 
-use 5.010;
 use strict;
 use warnings;
-use Carp;
 
 use Device::USB::PCSensor::HidTEMPer::Device;
 use Device::USB::PCSensor::HidTEMPer::NTC::Internal;
@@ -12,15 +10,15 @@ our @ISA = 'Device::USB::PCSensor::HidTEMPer::Device';
 
 =head1
 
-Device::USB::PCSensor::HidTEMPer::NTC - The HidTEMPerNTC device
+Device::USB::PCSensor::HidTEMPer::NTC - The HidTEMPerNTC thermometer
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 =head1 SYNOPSIS
 
@@ -28,7 +26,7 @@ None
 
 =head1 DESCRIPTION
 
-This is the implementation of the HidTEMPerNTC devices that have both one 
+This is the implementation of the HidTEMPerNTC thermometer that has both one 
 internal and one external sensor measuring the temperature.
 
 =head2 CONSTANTS
@@ -39,27 +37,23 @@ None
 
 =over 3
 
-=item * transform()
+=item * init()
 
-Transforms a generic device instance into a HidTEMPerNTC instance.
-
-Output
-  Ref to the object that have been transformed.
+Initialize the device, connects the sensors and makes the object ready 
+for use.
 
 =cut
 
-sub transform
+sub init
 {
-    my ( $class, $self )    = @_;
+    my $self = shift;
     
     # Add sensor references to this instance
     $self->{sensor}->{internal} = Device::USB::PCSensor::HidTEMPer::NTC::Internal->new( $self );
     $self->{sensor}->{external} = Device::USB::PCSensor::HidTEMPer::NTC::External->new( $self );
     
-    # Rebless and return a new version
-    bless $self, $class;
-    
-    return $self;
+    # Rebless
+    bless $self, 'Device::USB::PCSensor::HidTEMPer::NTC';
 }
 
 sub DESTROY
@@ -69,17 +63,14 @@ sub DESTROY
 
 =back
 
-=head1 INHERITED METHODS
+=head1 INHERIT METHODS FROM
 
-This module inherits methods from:
-  Device::USB::PCSensor::HidTEMPer::Device
+Device::USB::PCSensor::HidTEMPer::Device
 
 =head1 DEPENDENCIES
 
-  use 5.010;
-  use strict;
-  use warnings;
-  use Carp;
+This module internally includes and takes use of the following packages:
+
   use Device::USB::PCSensor::HidTEMPer::Device;
   use Device::USB::PCSensor::HidTEMPer::NTC::Internal;
   use Device::USB::PCSensor::HidTEMPer::NTC::External;
@@ -88,8 +79,7 @@ This module uses the strict and warning pragmas.
 
 =head1 BUGS
 
-If you find any bugs or missing features please notify me using the following 
-email address: msulland@cpan.org
+Please report any bugs or missing features using the CPAN RT tool.
 
 =head1 FOR MORE INFORMATION
 
@@ -107,9 +97,8 @@ None
 
 Copyright (c) 2010 Magnus Sulland
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.10.0 or,
-at your option, any later version of Perl 5 you may have available.
+This program is free software; you can redistribute it and/or modify it 
+under the same terms as Perl itself.
 
 =cut
 

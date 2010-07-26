@@ -1,6 +1,5 @@
 package Device::USB::PCSensor::HidTEMPer::Device;
 
-use 5.010;
 use strict;
 use warnings;
 use Carp;
@@ -11,11 +10,11 @@ Device::USB::PCSensor::HidTEMPer::Device - Generic device class
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 =head1 SYNOPSIS
 
@@ -23,9 +22,9 @@ None
 
 =head1 DESCRIPTION
 
-This module contains a generic class that all HidTEMPer devices should inherit
-from keeping the implemented methods consistent, and making it possible to 
-use the same code to contact every supported device.
+This module contains a generic class that all HidTEMPer devices should 
+inherit from, thereby keeping the implemented methods consistent and making it 
+possible to use the same code to contact every supported device.
 
 =head2 CONSTANTS
 
@@ -48,15 +47,12 @@ use constant CONNECTION_TIMEOUT => 60;
 
 Creates a new generic Device object.
 
-Output
-  Returns a generic initialized object.
-
 =cut
 
 sub new
 {
     my $class   = shift;
-    my ( $usb ) = @_;
+    my ( $usb ) = @_; # Device::USB::Device interface that should be used
     
     # Make sure that this is always a reference to the device.
     $usb = ref $usb 
@@ -64,7 +60,7 @@ sub new
             : \$usb;
     
     my $self    = {
-        device  => $usb, # Device::USB::Device interface that should be used
+        device  => $usb, 
     };
     
     # Possible sensors
@@ -95,12 +91,12 @@ sub new
 sub DESTROY
 {
     my $self    = shift;
-    
+
     # Delete sensors
     delete $self->{sensor}->{internal};
     delete $self->{sensor}->{external};
-    
-    # Release the two interfaces back to the operating system.
+
+    # Release the interfaces back to the operating system.
     $self->{device}->release_interface(0);
     $self->{device}->release_interface(1);
 
@@ -109,16 +105,14 @@ sub DESTROY
     return undef;
 }
 
-=item * type()
+=item * identifier()
 
-This method is used to acquire the hex value representing the device type.
-
-Output
-  Returns the hex value specifying the model type.
+This method is used to acquire the numerical value representing the device 
+type identifier.
 
 =cut
 
-sub type
+sub identifier
 {
     my $self    = shift;
     
@@ -132,43 +126,38 @@ sub type
     # Position 6: unknown
     # Position 7: unknown
     
-    my ( undef, $type ) = $self->read( 0x52 );
-    return $type;
+    my ( undef, $identifier ) = $self->_read( 0x52 );
+    return $identifier;
 }
 
-=item * read( @command_bytes )
+# _read( @command_bytes )
 
-Used to read information from the device. 
+# Used to read information from the device. 
 
-Input parameters
-  Array of 8 bit hex values, maximum of 32 bytes, representing 
-  the commands that will be executed by the device.
+# Input parameter
+# @command_bytes = Array of 8 bit hex values, maximum of 32 bytes, 
+# representing the commands that will be executed by the device.
 
-Output
-  An array of 8 bit hex values or a text string using chars 
-  (from 0 to 255) to represent the hex values.
-  
-Error
-  Returns undef on error, and carp to display a description.
+# Output parameter
+# An array of 8 bit hex values or a text string using chars 
+# (from 0x00 to 0xFF) to represent the hex values. Returns undef on error.
 
-=cut
-
-sub read
+sub _read
 {
     my $self                = shift;
     my ( @bytes )           = @_;
     my ( $data, $checksum ) = ( 0, 0 );
     
-    $checksum       += $self->command(32, 0xA, 0xB, 0xC, 0xD, 0x0, 0x0, 0x2 );
-    $checksum       += $self->command(32, @bytes );
-    $checksum       += $self->command(32, 0x0 );
-    $checksum       += $self->command(32, 0x0 );
-    $checksum       += $self->command(32, 0x0 );
-    $checksum       += $self->command(32, 0x0 );
-    $checksum       += $self->command(32, 0x0 );
-    $checksum       += $self->command(32, 0x0 );
-    $checksum       += $self->command(32, 0x0 );
-    $checksum       += $self->command(32, 0xA, 0xB, 0xC, 0xD, 0x0, 0x0, 0x1 );
+    $checksum       += $self->_command(32, 0xA, 0xB, 0xC, 0xD, 0x0, 0x0, 0x2 );
+    $checksum       += $self->_command(32, @bytes );
+    $checksum       += $self->_command(32, 0x0 );
+    $checksum       += $self->_command(32, 0x0 );
+    $checksum       += $self->_command(32, 0x0 );
+    $checksum       += $self->_command(32, 0x0 );
+    $checksum       += $self->_command(32, 0x0 );
+    $checksum       += $self->_command(32, 0x0 );
+    $checksum       += $self->_command(32, 0x0 );
+    $checksum       += $self->_command(32, 0xA, 0xB, 0xC, 0xD, 0x0, 0x0, 0x1 );
     
     # On error a wrong amount of bytes is returened.
     carp 'The device returned to few bytes'     if $checksum < 320;
@@ -192,28 +181,24 @@ sub read
     return wantarray ? unpack "C*", $data : $data;
 }
 
-=item * command( $total_byte_size, @data )
+# _command( $total_byte_size, @data )
 
-This method is used to send a command to the device, only used for commands 
-where the output is not needed to be captured.
+# This method is used to send a command to the device, only used for commands 
+# where the output is not needed to be captured.
 
-Input parameters
-  1) The total size that should be sent. Zero padding will be added 
-  at the end to achieve specified length.
-  2..x) An array of 8bit hex values representing the data that 
-  should be sent.
+# Input parameters
+# $total_byte_size = The total size that should be sent. Zero padding will be 
+# added at the end to achieve specified length.
 
-Output
-  Returns the number of bytes that where sent to the device if 
-  successful execution. This is the same amout of bytes that where 
-  specified as input.
+# @data = An array of 8bit hex values representing the data that 
+# should be sent.
 
-Error
-  Returns undef on error, and carp to display a description.
+# Output parameter
+# Returns the number of bytes that where sent to the device if successful 
+# execution. This is the same amout of bytes that where specified as input.
+# Returns undef on error.
 
-=cut
-
-sub command
+sub _command
 {
     my $self                = shift;
     my ( $size, @bytes )    = @_;
@@ -241,55 +226,51 @@ sub command
     return undef;
 }
 
-=item * write( @bytes )
+# _write( @bytes )
 
-This method is used to write information back to the device. Be carefull when
-using this, since any wrong information sent may destroy the device.
+# This method is used to write information back to the device. Be carefull 
+# when using this, since any wrong information sent may destroy the device.
 
-Output
-  Returns the number of bytes that where sent to the device if 
-  successful execution. This should be 288 if everything is 
-  successful.
+# Input parameter
+# @bytes = The bytes that should be written to the device, a maximum of 
+# 32 bytes.
 
-Error
-  Returns undef on error, and carp to display a description.
+# Output parameter
+# Returns the number of bytes that where sent to the device if successful 
+# execution. This should be 288 if everything is successful.
 
-=cut
-
-sub write
+sub _write
 {
     my $self                = shift;
     my ( @bytes )           = @_;
     my ( $data, $checksum ) = ( 0, 0 );
-    
+
     # Filter out possible actions
     return undef if $bytes[0] > 0x68 || $bytes[0] < 0x61;
-    
-    $checksum       += $self->command(32, 0xA, 0xB, 0xC, 0xD, 0x0, 0x0, 0x2 );
-    $checksum       += $self->command(32, @bytes );
-    $checksum       += $self->command(32, 0x0 );
-    $checksum       += $self->command(32, 0x0 );
-    $checksum       += $self->command(32, 0x0 );
-    $checksum       += $self->command(32, 0x0 );
-    $checksum       += $self->command(32, 0x0 );
-    $checksum       += $self->command(32, 0x0 );
-    $checksum       += $self->command(32, 0x0 );
-    
+
+    $checksum       += $self->_command(32, 0xA, 0xB, 0xC, 0xD, 0x0, 0x0, 0x2 );
+    $checksum       += $self->_command(32, @bytes );
+    $checksum       += $self->_command(32, 0x0 );
+    $checksum       += $self->_command(32, 0x0 );
+    $checksum       += $self->_command(32, 0x0 );
+    $checksum       += $self->_command(32, 0x0 );
+    $checksum       += $self->_command(32, 0x0 );
+    $checksum       += $self->_command(32, 0x0 );
+    $checksum       += $self->_command(32, 0x0 );
+
     # On error a wrong amount of bytes is returened.
     carp 'The device returned to few bytes'     if $checksum < 288;
     carp 'The device returned to many bytes'    if $checksum > 288;
     return undef if $checksum != 288;
-    
+
     return $checksum;
 }
 
-=item * internal
+=item * internal()
 
-Used to get the reference to the internal temperature sensor attached to this
-device
-
-Output
-  Reference to the internal temperature sensor. Undef if no sensor is present.
+Returns the corresponding Sensor object representing the internal sensor 
+connected to the device. If the device does not have an internal sensor undef 
+is returned.
 
 =cut
 
@@ -298,13 +279,11 @@ sub internal
     return $_[0]->{sensor}->{internal};
 }
 
-=item * external
+=item * external()
 
-Used to get the reference to the external temperature sensor attached to this
-device
-
-Output
-  Reference to the external temperature sensor. Undef if no sensor is present.
+Returns the corresponding Sensor object representing the external sensor 
+connected to the device. If the device does not have an external sensor undef 
+is returned.
 
 =cut
 
@@ -313,38 +292,33 @@ sub external
     return $_[0]->{sensor}->{external};
 }
 
-=item * transform
+=item * init()
 
-Empty method that should be implemented in order to be able to transfor 
-a object from the generic device into a spesific device.
+Empty method that should be implemented in order to be able to initialize 
+a object instance.
 
 =cut
 
-sub transform   { return undef; }
+sub init
+{ 
+    return undef; 
+}
 
 =back
 
 =head1 DEPENDENCIES
 
-  use 5.010;
-  use strict;
-  use warnings;
-  use Carp;
+This module internally includes and takes use of the following packages:
 
-This module depends on the Device::USB and Device::USB::Device modules in 
-order to communicate using the libusb project. Errors are reported using 
-the Carp module.
+  use Carp;
+  use Device::USB;
+  use Device::USB::Device;
 
 This module uses the strict and warning pragmas. 
 
 =head1 BUGS
 
-If you find any bugs or missing features please notify me using the following 
-email address: msulland@cpan.org
-
-In this release the object does not update the device by writing information 
-back to it. If or when this feature will be included, and the necessity of it, 
-is still unknown.
+Please report any bugs or missing features using the CPAN RT tool.
 
 =head1 FOR MORE INFORMATION
 
@@ -362,9 +336,8 @@ None
 
 Copyright (c) 2010 Magnus Sulland
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.10.0 or,
-at your option, any later version of Perl 5 you may have available.
+This program is free software; you can redistribute it and/or modify it 
+under the same terms as Perl itself.
 
 =cut
 

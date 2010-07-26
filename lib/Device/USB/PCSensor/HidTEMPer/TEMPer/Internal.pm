@@ -1,9 +1,7 @@
 package Device::USB::PCSensor::HidTEMPer::TEMPer::Internal;
 
-use 5.010;
 use strict;
 use warnings;
-use Carp;
 
 use Device::USB::PCSensor::HidTEMPer::Sensor;
 our @ISA = 'Device::USB::PCSensor::HidTEMPer::Sensor';
@@ -14,11 +12,11 @@ Device::USB::PCSensor::HidTEMPer::TEMPer::Internal - The HidTEMPer internal sens
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 =head1 SYNOPSIS
 
@@ -34,7 +32,7 @@ This is the implementation of the HidTEMPer internal sensor.
 
 =item * MAX_TEMPERATURE
 
-The highest temperature this sensor can detect.
+The highest temperature(120 degrees celsius) this sensor can detect.
 
 =cut
 
@@ -42,7 +40,7 @@ use constant MAX_TEMPERATURE    => 120;
 
 =item * MIN_TEMPERATURE
 
-The lowest temperature this sensor can detect.
+The lowest temperature(-40 degrees celsius) this sensor can detect.
 
 =back
 
@@ -56,10 +54,7 @@ use constant MIN_TEMPERATURE    => -40;
 
 =item * celsius()
 
-Read the current temperature from the device.
-
-Output
-  Returns the corrent degree in celsius
+Returns the current temperature from the device in celsius degrees.
 
 =cut
 
@@ -80,11 +75,11 @@ sub celsius
     # Position 7: unused
     
     # First reading
-    @data       = $self->{unit}->read( 0x54 );
+    @data       = $self->{unit}->_read( 0x54 );
     $reading    = $data[0] + ( $data[1] / 256 );
     
     # Secound reading
-    @data       = $self->{unit}->read( 0x54 );
+    @data       = $self->{unit}->_read( 0x54 );
     $reading    += $data[0] + ( $data[1] / 256 );  
 
     # Return the average, this adds precision
@@ -93,25 +88,21 @@ sub celsius
 
 =back
 
-=head1 INHERITED METHODS
+=head1 INHERIT METHODS FROM
 
-This module inherits methods from:
-  Device::USB::PCSensor::HidTEMPer::Sensor
+Device::USB::PCSensor::HidTEMPer::Sensor
 
 =head1 DEPENDENCIES
 
-  use 5.010;
-  use strict;
-  use warnings;
-  use Carp;
+This module internally includes and takes use of the following packages:
+
   use Device::USB::PCSensor::HidTEMPer::Sensor;
 
 This module uses the strict and warning pragmas. 
 
 =head1 BUGS
 
-If you find any bugs or missing features please notify me using the following 
-email address: msulland@cpan.org
+Please report any bugs or missing features using the CPAN RT tool.
 
 =head1 FOR MORE INFORMATION
 
@@ -131,9 +122,8 @@ temper-temperature-sensor-linux-driver/
 
 Copyright (c) 2010 Magnus Sulland
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.10.0 or,
-at your option, any later version of Perl 5 you may have available.
+This program is free software; you can redistribute it and/or modify it 
+under the same terms as Perl itself.
 
 =cut
 

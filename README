@@ -1,4 +1,4 @@
-Device-USB-PCSensor-HidTEMPer version 0.01
+Device-USB-PCSensor-HidTEMPer version 0.02
 ==========================================
 
 This module contains an interface to the PCSensor HidTEMPer and PCSensor 
@@ -17,8 +17,7 @@ destroy the device.
 
 TODO
 
-This release does not contain any test-scripts, this will be added in the 
-next release.
+Please contact me if you find anything to be missing.
 
 INSTALLATION
 
@@ -33,9 +32,6 @@ DEPENDENCIES
 
 This modules uses the following other modules:
 
-use 5.010
-use strict
-use warnings
 use Carp
 use Device::USB
 use Device::USB::Device
@@ -43,12 +39,36 @@ use Time::HiRes qw / sleep /
 
 This module uses the strict and warning pragmas.
 
+DEVICE COMMANDS
+
+Get information from the device:
+
+Command: 0x52
+Returns 8 bytes of interest:
+1) Unknown 
+2) Device ID 
+3) Inner calibration 
+4) Inner calibration
+5) Outer calibration
+6) Outer calibration
+7) unknown
+8) unknown
+
+Command: 0x61
+Set gain value, the command equals the gain to be set, 0x61, 0x62....0x68
+
+Command: 0x41
+Returns 3 bytes of value
+1) Primary value
+2) Decimal value 
+3) unknown
+
+Command: 0x43
+Set configuration of the device to 0
+
 COPYRIGHT AND LICENSE
 
 Copyright (c) 2010 Magnus Sulland
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.10.0 or,
-at your option, any later version of Perl 5 you may have available.
-
-
+This program is free software; you can redistribute it and/or modify it 
+under the same terms as Perl itself.

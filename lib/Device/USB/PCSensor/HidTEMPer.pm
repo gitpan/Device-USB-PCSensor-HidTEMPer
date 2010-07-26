@@ -1,9 +1,7 @@
 package Device::USB::PCSensor::HidTEMPer;
 
-use 5.010;
 use strict;
 use warnings;
-use Carp;
 
 use Device::USB;
 use Device::USB::PCSensor::HidTEMPer::Device;
@@ -16,159 +14,176 @@ Device::USB::PCSensor::HidTEMPer - Device overview
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 =head1 SYNOPSIS
 
-  use Device::USB::PCSensor::HidTEMPer;
+Shared code:
 
-  my $pcsensor  = Device::USB::PCSensor::HidTEMPer->new();
-  my @devices   = $pcsensor->list_devices();
+  use Device::USB::PCSensor::HidTEMPer;
+  my $pcsensor = Device::USB::PCSensor::HidTEMPer->new();
+
+Single-device systems:
+
+  my $device = $pcsensor->device();
+  print $device->external()->fahrenheit() if defined $device->external();
   
+Multi-device systems:
+
+  my @devices = $pcsensor->list_devices();
+
   foreach my $device ( @devices ){
-    say $device->internal()->celsius();
+    print $device->internal()->celsius() if defined $device->internal();
   }
 
 =head1 DESCRIPTION
 
-Simplified interface to the usb devices hiding Device::USB from the user. 
-Using this class to list devices ensures that only the correct 
-temperature devices are returned, all initialized and ready for use.
+This module is a simplified interface to the HidTEMPer thermometers created 
+by PCSensor. It hides any problems recognizing the correct objects to 
+initialize and the dependency on Device::USB. Use of the connected 
+thermometers can be done by either creating a array of objects if 
+multiple devices are connected, or the function device() if 
+only one device is present.
+
+One example of its usage can be found in the Linux Journal August 2010, 
+"Cool Projects edition" page 32-34.
 
 =head2 CONSTANTS
 
-The following constants are declared in this class
+The following constants are declared
 
 =over 3
 
 =item * PRODUCT_ID
 
-Contains the hex value of the product id on the usb chip.
+Contains the hex value of the product id on the usb chip, in this case 0x660c
 
 =cut
 
-use constant PRODUCT_ID	=> 0x660c; 
+use constant PRODUCT_ID => 0x660c; 
 
 =item * VENDOR_ID
 
 Contains the hex value representing the manufacturer of the chip, in this
-case this is "Tenx Technology, Inc."
+case "Tenx Technology, Inc."
 
 =cut
 
-use constant VENDOR_ID	=> 0x1130;
+use constant VENDOR_ID => 0x1130;
+
+=item * SUPPORTED_DEVICES
+
+Contains the mapping between name and identifiers for all supported 
+thermometers.
+
+ Hex value   Product         Internal sensor    External sensor
+ 0x5b        HidTEMPerNTC    Yes                Yes
+ 0x58        HidTEMPer       Yes                No
 
 =back
 
+=cut
+
+use constant SUPPORTED_DEVICES => {
+    0x5b    => {
+        'name'      => 'HidTEMPerNTC',
+        'module'    => 'Device::USB::PCSensor::HidTEMPer::NTC'
+    },
+    0x58    => {
+        'name'      => 'HidTEMPer',
+        'module'    => 'Device::USB::PCSensor::HidTEMPer::TEMPer'
+    }
+};
+
 =head2 METHODS
 
-=over 4
+=over 3
 
 =item * new()
+
+Initialize the system, and the USB-connection to be used.
 
 =cut
 
 sub new
 {
     my $class   = shift;
-    
     my $self    = {
-        usb     => undef,
-        devices => undef, 
+        'usb'   => Device::USB->new()
     };
-    
-    $self->{usb}        = Device::USB->new();
-    $self->{devices}    = ();
-    
-    bless $self, $class;
-    return $self;
+
+    return bless $self, $class;
+}
+
+=item * device()
+
+Return a single thermometer instance. ONLY to be used in systems using a 
+single thermometer device. Returns undef if no devices was found.
+
+=cut
+
+sub device
+{
+    my $self    = shift;
+    my $device  = $self->{usb}->find_device( VENDOR_ID, PRODUCT_ID );
+
+    return undef unless defined $device;
+    return _init_device($device);
 }
 
 =item * list_devices()
 
-Returns an array of all the recognized devices that are attaced to the system.
-Each device is a object of the same type as the device found.
+Returns an array of recognized thermometer instances if an array value is 
+expected, otherwise it returns a scalar with the number of devices found.
 
 =cut
 
 sub list_devices
 {
     my $self    = shift;
-	my @devices	= ();
-	
-	@devices = grep defined( $_ ),
-	            map $self->device( $_ ), $self->{usb}->list_devices( VENDOR_ID, 
-	                                                                 PRODUCT_ID );
+    my @list    = ();
 
-	return wantarray ? @devices : scalar @devices;
+    @list = grep( defined($_), 
+                  map( _init_device($_), 
+                       $self->{usb}->list_devices( VENDOR_ID, 
+                                                   PRODUCT_ID )));
+
+    return wantarray() ? return @list : scalar @list;
 }
 
-=item * device( $generic_device )
-
-Convert a generic usb-device into the corresponding HidTEMPer device.
-
-Input parameters
-  1) The Device::USB::Device object that should be converted to the 
-  appropriate object type.
-
-
-Output
-  This method returns a object of the corresponding type if the 
-  device is supported, else it returns undef. Returns undef on 
-  errors, and carp to display the error message.
-
-=cut
-
-sub device
+# This functions detects the correct object to be created and returned. 
+# Returns undef if not supported device was found.
+sub _init_device
 {
-	my $self    = shift;
-	my $usb     = shift;
-	my $device  = Device::USB::PCSensor::HidTEMPer::Device->new( $usb );
-
-=pod
-
-List of supported devices:
-
- Hex value   Product         Internal sensor    External sensor
- 0x5b        HidTEMPerNTC    Yes                Yes
- 0x58        HidTEMPer       Yes                No
-
-=cut
-
-	# Reblesses the generic device into the correct version.
-	given ( $device->type() ){
-	    when ( undef )  { carp 'Undefined device type returned' }
-	    when ( 0x58 )   { return Device::USB::PCSensor::HidTEMPer::TEMPer->transform( $device )   }
-	    when ( 0x5b )   { return Device::USB::PCSensor::HidTEMPer::NTC->transform( $device )      }
-	    default         { carp 'Unsupported device' }
-	}
-
-	return undef;
+    my $prototype   = Device::USB::PCSensor::HidTEMPer::Device->new( $_[0] );
+    my $parameters  = (SUPPORTED_DEVICES)[0]{$prototype->identifier()};
+    
+    return undef unless defined $parameters;
+    
+    bless $prototype, $parameters->{module};
+    return $prototype->init();
 }
 
 =back
 
 =head1 DEPENDENCIES
 
-  use 5.010;
-  use strict;
-  use warnings;
-  use Carp;
-  use Device::USB;
-  use Device::USB::PCSensor::HidTEMPer::Device;
-  use Device::USB::PCSensor::HidTEMPer::NTC;
-  use Device::USB::PCSensor::HidTEMPer::TEMPer;
+This module internally includes and takes use of the following packages:
+
+ use Device::USB;
+ use Device::USB::PCSensor::HidTEMPer::Device;
+ use Device::USB::PCSensor::HidTEMPer::NTC;
+ use Device::USB::PCSensor::HidTEMPer::TEMPer;
 
 This module uses the strict and warning pragmas. 
 
 =head1 BUGS
 
-If you find any bugs or missing features please notify me using the following 
-email address: msulland@cpan.org
+Please report any bugs or missing features using the CPAN RT tool.
 
 =head1 FOR MORE INFORMATION
 
@@ -186,9 +201,8 @@ None
 
 Copyright (c) 2010 Magnus Sulland
 
- This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.10.0 or,
-at your option, any later version of Perl 5 you may have available.
+This program is free software; you can redistribute it and/or modify it 
+under the same terms as Perl itself.
 
 =cut
 

@@ -1,9 +1,8 @@
 package Device::USB::PCSensor::HidTEMPer::Sensor;
 
-use 5.010;
 use strict;
 use warnings;
-use Carp;
+
 use Scalar::Util qw/ weaken /;
 
 =head1
@@ -12,11 +11,11 @@ Device::USB::PCSensor::HidTEMPer::Sensor - Generic sensor class
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 =head1 SYNOPSIS
 
@@ -34,7 +33,7 @@ use the same code to contact every supported device.
 
 =item * MAX_TEMPERATURE
 
-The highest temperature this sensor can detect.
+The highest temperature(Celsius) this sensor can detect.
 
 =cut
 
@@ -42,7 +41,7 @@ use constant MAX_TEMPERATURE    => 0;
 
 =item * MIN_TEMPERATURE
 
-The lowest temperature this sensor can detect.
+The lowest temperature(Celsius) this sensor can detect.
 
 =back
 
@@ -59,7 +58,9 @@ use constant MIN_TEMPERATURE    => 0;
 Generic initializing method, creating a sensor object.
 
 Input parameter
-  Ref to the device that contains the sensor.
+
+$device = A pre-initialized Device::USB::PCSensor::HidTEMPer::Device that
+the sensor is connected to. This device will be used to handle communication.
 
 =cut
 
@@ -84,9 +85,6 @@ sub new
 Reads the current temperature and returns the corresponding value in 
 fahrenheit degrees.
 
-Output
-  A number representing the current temperature in fahrenheit.
-
 =cut
 
 sub fahrenheit
@@ -100,12 +98,7 @@ sub fahrenheit
 
 =item * max()
 
-Returns the highest part of the sensors temperature range ( the most positive
-number )
-
-Output
-  A number representing the highest possible temperature the sensor 
-  can detect.
+Returns the highest temperature(Celsius) the sensor can detect. 
 
 =cut
 
@@ -116,12 +109,7 @@ sub max
 
 =item * min()
 
-Returns the lowest part of the sensors temperature range ( the most negative 
-number ).
-
-Output
-  A number representing the lowest possible temperature the sensors 
-  can detect. 
+Returns the lowest temperature(Celsius) the sensor can detect. 
 
 =cut
 
@@ -133,7 +121,7 @@ sub min
 =item * celsius()
 
 Empty method that should be implemented in each sensor, returing the 
-current degrees in celsius. Returns undef.
+current degrees in celsius.
 
 =cut
 
@@ -145,22 +133,15 @@ sub celsius {
 
 =head1 DEPENDENCIES
 
-  use 5.010;
-  use strict;
-  use warnings;
-  use Carp;
+This module internally includes and takes use of the following packages:
+
+  use Scalar::Util qw/ weaken /;
 
 This module uses the strict and warning pragmas. 
 
 =head1 BUGS
 
-If you find any bugs or missing features please notify me using the following 
-email address: msulland@cpan.org
-
-In this version the calibration values present in the device is not used, 
-and the values returned are thereby not calibrated like the official software 
-does. This feature is scheduled to be included in the next release of this code
-if it is found to make the device more accurate.
+Please report any bugs or missing features using the CPAN RT tool.
 
 =head1 FOR MORE INFORMATION
 
@@ -178,9 +159,8 @@ None
 
 Copyright (c) 2010 Magnus Sulland
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.10.0 or,
-at your option, any later version of Perl 5 you may have available.
+This program is free software; you can redistribute it and/or modify it 
+under the same terms as Perl itself.
 
 =cut
 

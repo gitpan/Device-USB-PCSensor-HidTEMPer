@@ -334,7 +334,7 @@ None
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright (c) 2010 Magnus Sulland
+Copyright (c) 2010-2011 Magnus Sulland
 
 This program is free software; you can redistribute it and/or modify it 
 under the same terms as Perl itself.

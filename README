@@ -1,4 +1,4 @@
-Device-USB-PCSensor-HidTEMPer version 0.02
+Device-USB-PCSensor-HidTEMPer version 0.03
 ==========================================
 
 This module contains an interface to the PCSensor HidTEMPer and PCSensor 
@@ -68,7 +68,7 @@ Set configuration of the device to 0
 
 COPYRIGHT AND LICENSE
 
-Copyright (c) 2010 Magnus Sulland
+Copyright (c) 2010-2011 Magnus Sulland
 
 This program is free software; you can redistribute it and/or modify it 
 under the same terms as Perl itself.

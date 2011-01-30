@@ -1,5 +1,11 @@
 Revision history for Perl extension Device::USB::PCSensor::HidTEMPer
 
+0.03 25 Jan 2011
+	- Added initialization of the devices. Thanks to Jeremy G for 
+	noticing that this was missing and providing a fix. 
+	- Added fix received from Jean F. Delpech making the device return
+	temperatures bellow 0 Celsius correctly.
+
 0.0201 28 Jul 2010
 	- Removed the misplaced Makefile from the tarball.
 	- Cleaned up Changes.
@@ -20,4 +26,3 @@ Revision history for Perl extension Device::USB::PCSensor::HidTEMPer
 
 0.01  07 Feb 2010 (first release)
 	- Original version.
-

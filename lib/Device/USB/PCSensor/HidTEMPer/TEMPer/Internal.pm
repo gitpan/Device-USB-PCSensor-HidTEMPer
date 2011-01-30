@@ -12,11 +12,11 @@ Device::USB::PCSensor::HidTEMPer::TEMPer::Internal - The HidTEMPer internal sens
 
 =head1 VERSION
 
-Version 0.02
+Version 0.03
 
 =cut
 
-our $VERSION = 0.02;
+our $VERSION = 0.03;
 
 =head1 SYNOPSIS
 
@@ -76,11 +76,11 @@ sub celsius
     
     # First reading
     @data       = $self->{unit}->_read( 0x54 );
-    $reading    = $data[0] + ( $data[1] / 256 );
+    $reading    = ($data[0] < 128) ? $data[0] + ( $data[1] / 256 ) : ($data[0] - 255) - ( $data[1] / 256 );
     
     # Secound reading
     @data       = $self->{unit}->_read( 0x54 );
-    $reading    += $data[0] + ( $data[1] / 256 );  
+    $reading    += ($data[0] < 128) ? $data[0] + ( $data[1] / 256 ) : ($data[0] - 255) - ( $data[1] / 256 );
 
     # Return the average, this adds precision
     return $reading / 2;
@@ -114,13 +114,17 @@ Magnus Sulland < msulland@cpan.org >
 
 =head1 ACKNOWLEDGEMENTS
 
+Thanks to Jean F. Delpech for the temperature fix that solves the problem
+with temperatures bellow 0 Celsius.
+
+
 This code is inspired by Relavak's source code and the comments found 
 at: http://relavak.wordpress.com/2009/10/17/
 temper-temperature-sensor-linux-driver/
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright (c) 2010 Magnus Sulland
+Copyright (c) 2010-2011 Magnus Sulland
 
 This program is free software; you can redistribute it and/or modify it 
 under the same terms as Perl itself.

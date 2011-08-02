@@ -11,11 +11,11 @@ Device::USB::PCSensor::HidTEMPer::Sensor - Generic sensor class
 
 =head1 VERSION
 
-Version 0.02
+Version 0.0301
 
 =cut
 
-our $VERSION = 0.02;
+our $VERSION = 0.0301;
 
 =head1 SYNOPSIS
 
@@ -90,7 +90,8 @@ fahrenheit degrees.
 sub fahrenheit
 {
     my $self    = shift;
-    my $celsius = $self->celsius() // 0;
+	my $celsius = $self->celsius();
+	$celsius = 0 unless defined $celsius;
     
     # Calculate and return the newly created degrees
     return ( ( $celsius * 9 ) / 5 ) + 32;
@@ -153,7 +154,7 @@ Magnus Sulland < msulland@cpan.org >
 
 =head1 ACKNOWLEDGEMENTS
 
-None
+Thanks to Elan Ruusamäe for fixing some compatibility issues with perl 5.8
 
 =head1 COPYRIGHT & LICENSE
 

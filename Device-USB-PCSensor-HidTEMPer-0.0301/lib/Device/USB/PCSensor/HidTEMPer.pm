@@ -14,11 +14,11 @@ Device::USB::PCSensor::HidTEMPer - Device overview
 
 =head1 VERSION
 
-Version 0.02
+Version 0.0301
 
 =cut
 
-our $VERSION = 0.02;
+our $VERSION = 0.0301;
 
 =head1 SYNOPSIS
 
@@ -160,7 +160,7 @@ sub list_devices
 sub _init_device
 {
     my $prototype   = Device::USB::PCSensor::HidTEMPer::Device->new( $_[0] );
-    my $parameters  = (SUPPORTED_DEVICES)[0]{$prototype->identifier()};
+    my $parameters  = SUPPORTED_DEVICES->{$prototype->identifier()};
     
     return undef unless defined $parameters;
     
@@ -195,7 +195,7 @@ Magnus Sulland < msulland@cpan.org >
 
 =head1 ACKNOWLEDGEMENTS
 
-None
+Thanks to Elan Ruusamäe for fixing some compatibility issues with perl 5.8
 
 =head1 COPYRIGHT & LICENSE
 

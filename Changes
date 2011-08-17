@@ -1,5 +1,11 @@
 Revision history for Perl extension Device::USB::PCSensor::HidTEMPer
 
+0.04 14 Aug 2011
+	- Support for new device added by Daniel Fahlgren (TEMPer2).
+
+0.0302 02 Aug 2011
+	- Fixed CPAN upload of version 0.0301 (damaged archive).
+
 0.0301 02 Aug 2011
 	- Removed syntactic sugar that only works with perl 5.10 and newer, 
 	thanks to Elan Ruusamäe for spotting and fixing the problems.

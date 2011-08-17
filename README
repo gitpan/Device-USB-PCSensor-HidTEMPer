@@ -1,4 +1,4 @@
-Device-USB-PCSensor-HidTEMPer version 0.0301
+Device-USB-PCSensor-HidTEMPer version 0.04
 ==========================================
 
 This module contains an interface to the PCSensor HidTEMPer and PCSensor 
@@ -57,14 +57,24 @@ Returns 8 bytes of interest:
 Command: 0x61
 Set gain value, the command equals the gain to be set, 0x61, 0x62....0x68
 
-Command: 0x41
+Command: 0x53 or 0x54 depending on device and sensor
 Returns 3 bytes of value
 1) Primary value
 2) Decimal value 
 3) unknown
 
+Command: 0x41
+Returns 3 bytes of value
+1) Part one of the float number
+2) Part two of the float number
+3) Part three of the float number
+
 Command: 0x43
 Set configuration of the device to 0
+
+ACKNOWLEDGEMENTS
+
+Thanks to Daniel Fahlgren for updating different commands.
 
 COPYRIGHT AND LICENSE
 

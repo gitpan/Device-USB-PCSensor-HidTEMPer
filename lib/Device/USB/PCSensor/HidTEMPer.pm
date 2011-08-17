@@ -7,6 +7,7 @@ use Device::USB;
 use Device::USB::PCSensor::HidTEMPer::Device;
 use Device::USB::PCSensor::HidTEMPer::NTC;
 use Device::USB::PCSensor::HidTEMPer::TEMPer;
+use Device::USB::PCSensor::HidTEMPer::TEMPer2;
 
 =head1 NAME
 
@@ -14,11 +15,11 @@ Device::USB::PCSensor::HidTEMPer - Device overview
 
 =head1 VERSION
 
-Version 0.0301
+Version 0.04
 
 =cut
 
-our $VERSION = 0.0301;
+our $VERSION = 0.04;
 
 =head1 SYNOPSIS
 
@@ -83,6 +84,7 @@ thermometers.
  Hex value   Product         Internal sensor    External sensor
  0x5b        HidTEMPerNTC    Yes                Yes
  0x58        HidTEMPer       Yes                No
+ 0x59        HidTEMPer2      Yes                Yes
 
 =back
 
@@ -96,6 +98,10 @@ use constant SUPPORTED_DEVICES => {
     0x58    => {
         'name'      => 'HidTEMPer',
         'module'    => 'Device::USB::PCSensor::HidTEMPer::TEMPer'
+    },
+    0x59    => {
+        'name'      => 'HidTEMPer2',
+        'module'    => 'Device::USB::PCSensor::HidTEMPer::TEMPer2'
     }
 };
 
@@ -178,6 +184,7 @@ This module internally includes and takes use of the following packages:
  use Device::USB::PCSensor::HidTEMPer::Device;
  use Device::USB::PCSensor::HidTEMPer::NTC;
  use Device::USB::PCSensor::HidTEMPer::TEMPer;
+ use Device::USB::PCSensor::HidTEMPer::TEMPer2;
 
 This module uses the strict and warning pragmas. 
 
@@ -195,7 +202,9 @@ Magnus Sulland < msulland@cpan.org >
 
 =head1 ACKNOWLEDGEMENTS
 
-Thanks to Elan Ruusamäe for fixing some compatibility issues with perl 5.8
+Thanks to Elan Ruusamäe for fixing some compatibility issues with perl 5.8.
+
+Thanks to Daniel Fahlgren for adding the TEMPer2 device.
 
 =head1 COPYRIGHT & LICENSE
 

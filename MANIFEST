@@ -11,6 +11,9 @@ lib/Device/USB/PCSensor/HidTEMPer/NTC/External.pm
 lib/Device/USB/PCSensor/HidTEMPer/NTC/Internal.pm
 lib/Device/USB/PCSensor/HidTEMPer/TEMPer.pm
 lib/Device/USB/PCSensor/HidTEMPer/TEMPer/Internal.pm
+lib/Device/USB/PCSensor/HidTEMPer/TEMPer2.pm
+lib/Device/USB/PCSensor/HidTEMPer/TEMPer2/Internal.pm
+lib/Device/USB/PCSensor/HidTEMPer/TEMPer2/External.pm
 t/device.t
 t/hidtemper.t
 t/sensor.t
